@@ -15,6 +15,7 @@ This project is designed to demonstrate a complete MLOps lifecycle using Kubeflo
 - Docker installed and configured on your machine.
 - Access to a Kubernetes cluster (e.g., Minikube, EKS, GKE).
 - Python 3.8 or higher.
+- pip and virtualenv (optional, but recommended for package management)
 
 ### Installation
 
