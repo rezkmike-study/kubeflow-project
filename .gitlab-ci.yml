@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - validate
+  - sonarqube_scan
   - deploy
   - monitor
   - notify
@@ -32,6 +33,7 @@ test:
   artifacts:
     reports:
       junit: test_report.xml
+  allow_failure: false
 
 validate_model:
   stage: validate
@@ -42,6 +44,24 @@ validate_model:
     paths:
       - validation_report.txt
     expire_in: 1 week
+  allow_failure: false
+
+sonarqube_scan:
+  stage: sonarqube_scan
+  image: 
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_TOKEN: $SONAR_TOKEN
+    SONAR_HOST_URL: $SONAR_HOST_URL
+  script:
+    - sonar-scanner
+  only:
+    - master
+    - merge_requests
+  except:
+    - tags
+  allow_failure: false
 
 push_to_registry:
   stage: deploy
@@ -66,6 +86,7 @@ push_to_registry:
     refs:
       - master
     merge_requests: true
+  when: on_success
 
 deploy_staging:
   stage: deploy
@@ -76,6 +97,7 @@ deploy_staging:
   when: manual
   only:
     - develop
+  when: on_success
 
 monitor_performance:
   stage: monitor
@@ -89,7 +111,3 @@ notify_failure:
     - echo "Pipeline failed at $CI_PIPELINE_URL"
     - ./notify_slack.sh "Pipeline failure notice"
   when: on_failure
-
-include:
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Dependency-Scanning.gitlab-ci.yml
