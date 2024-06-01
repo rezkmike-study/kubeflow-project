@@ -1,0 +1,66 @@
+stages:
+  - build
+  - push
+  - update_manifest
+
+variables:
+  IMAGE_NAME: "your-image-name"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  REGISTRY_TYPE: "dockerhub"
+
+before_script:
+  - echo "Starting Job..."
+
+build_image:
+  stage: build
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+push_to_registry:
+  stage: push
+  script:
+    - echo "Pushing image to the registry..."
+    - >
+      if [ "$REGISTRY_TYPE" == "ecr" ]; then
+        echo "Logging into AWS ECR..."
+        $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+        docker tag $IMAGE_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+      elif [ "$REGISTRY_TYPE" == "dockerhub" ]; then
+        echo "Logging into Docker Hub..."
+        echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+        docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_HUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+        docker push $DOCKER_HUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+      else
+        echo "No valid registry type selected."
+        exit 1
+      fi
+  only:
+    refs:
+      - master
+      - main
+    merge_requests: true
+
+update_manifest:
+  stage: update_manifest
+  script:
+    - echo "Updating Kubernetes manifests..."
+    - >
+      if [ "$REGISTRY_TYPE" == "ecr" ]; then
+        NEW_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG"
+      else
+        NEW_IMAGE="$DOCKER_HUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
+      fi
+    - sed -i "s|image: .*|image: $NEW_IMAGE|" manifests/k8s/deployment.yaml
+  after_script:
+    - git config --global user.email "you@example.com"
+    - git config --global user.name "Your Name"
+    - git add manifests/k8s/deployment.yaml
+    - git commit -m "Update image tag to $IMAGE_TAG"
+    - git push origin master
+  only:
+    refs:
+      - master
+      - main
+    merge_requests: true
