@@ -9,6 +9,8 @@ This project is designed to demonstrate a complete MLOps lifecycle using Kubeflo
 - **Model Evaluation**: Evaluate the model's performance with standard metrics.
 - **Model Serving**: Serve the model using Kubeflow Serving for real-time predictions.
 
+---
+
 ### Prerequisites
 
 - Kubernetes Cluster with Kubeflow installed.
@@ -16,6 +18,8 @@ This project is designed to demonstrate a complete MLOps lifecycle using Kubeflo
 - Access to a Kubernetes cluster (e.g., Minikube, EKS, GKE).
 - Python 3.8 or higher.
 - pip and virtualenv (optional, but recommended for package management)
+
+---
 
 ### Installation
 
@@ -48,6 +52,8 @@ This project is designed to demonstrate a complete MLOps lifecycle using Kubeflo
    docker build -t iris-serve:latest -f docker/Dockerfile.serve .
    ```
 
+---
+
 ### Running the Project
 
 1. **Start the Pipeline**
@@ -69,6 +75,8 @@ This project is designed to demonstrate a complete MLOps lifecycle using Kubeflo
    ```bash
    curl -X POST http://<service-url>/predict -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}'
    ```
+
+---
 
 ### GitLab CI/CD Pipeline Documentation for Kubeflow Project
 
@@ -115,12 +123,14 @@ This document describes the continuous integration and deployment (CI/CD) proces
 - Pipeline configurations are version-controlled within the GitLab repository, allowing for historical tracking and easy rollback.
 - Updates to the pipeline configuration follow the review and approval process established for code changes.
 
+---
+
 ### Additional Resources
 
 - **Kubeflow Documentation**: [Official Kubeflow Documentation](https://www.kubeflow.org/docs/)
 - **Kubernetes Documentation**: [Official Kubernetes Documentation](https://kubernetes.io/docs/)
 
-### Contributing
+### Contribution
 
 Contributions to this project are welcome! Please refer to our contributing guidelines for more information.
 
