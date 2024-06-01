@@ -1,12 +1,19 @@
 stages:
   - build
-  - push
-  - update_manifest
+  - test
+  - validate
+  - deploy
+  - monitor
+  - notify
 
 variables:
   IMAGE_NAME: "your-image-name"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
-  REGISTRY_TYPE: "dockerhub"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
 
 before_script:
   - echo "Starting Job..."
@@ -17,8 +24,27 @@ build_image:
     - echo "Building Docker image..."
     - docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - ./run_tests.sh
+  artifacts:
+    reports:
+      junit: test_report.xml
+
+validate_model:
+  stage: validate
+  script:
+    - echo "Validating model..."
+    - python validate_model.py
+  artifacts:
+    paths:
+      - validation_report.txt
+    expire_in: 1 week
+
 push_to_registry:
-  stage: push
+  stage: deploy
   script:
     - echo "Pushing image to the registry..."
     - >
@@ -39,28 +65,31 @@ push_to_registry:
   only:
     refs:
       - master
-      - main
     merge_requests: true
 
-update_manifest:
-  stage: update_manifest
-  script:
-    - echo "Updating Kubernetes manifests..."
-    - >
-      if [ "$REGISTRY_TYPE" == "ecr" ]; then
-        NEW_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG"
-      else
-        NEW_IMAGE="$DOCKER_HUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
-      fi
-    - sed -i "s|image: .*|image: $NEW_IMAGE|" manifests/k8s/deployment.yaml
-  after_script:
-    - git config --global user.email "you@example.com"
-    - git config --global user.name "Your Name"
-    - git add manifests/k8s/deployment.yaml
-    - git commit -m "Update image tag to $IMAGE_TAG"
-    - git push origin master
+deploy_staging:
+  stage: deploy
+  script: deploy_staging.sh
+  environment:
+    name: staging
+    url: https://staging.example.com
+  when: manual
   only:
-    refs:
-      - master
-      - main
-    merge_requests: true
+    - develop
+
+monitor_performance:
+  stage: monitor
+  script:
+    - echo "Monitoring application performance..."
+    - python monitor_performance.py
+
+notify_failure:
+  stage: notify
+  script:
+    - echo "Pipeline failed at $CI_PIPELINE_URL"
+    - ./notify_slack.sh "Pipeline failure notice"
+  when: on_failure
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
