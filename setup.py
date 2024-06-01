@@ -15,7 +15,7 @@ setup(
         'pandas',
         'scikit-learn',
         'flask',
-        'kubeflow-kale',  # If using Kale for Kubeflow Pipelines
+        'kubeflow-kale',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
