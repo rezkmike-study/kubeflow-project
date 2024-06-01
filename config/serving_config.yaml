@@ -1,0 +1,14 @@
+serving:
+  type: KFServing
+  image: "registry/my-model:latest"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  autoscaling:
+    min_replicas: 2
+    max_replicas: 5
+    target_cpu_utilization: 75

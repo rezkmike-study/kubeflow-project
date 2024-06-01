@@ -1,0 +1,15 @@
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 0.001
+  model_save_path: "/models/iris_model.pkl"
+  optimizer: "adam"
+  loss_function: "categorical_crossentropy"
+
+resources:
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
+    cpu: "1"
+    memory: "2Gi"

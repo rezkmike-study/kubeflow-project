@@ -1,0 +1,12 @@
+pipeline:
+  schedule: "0 1 * * *"
+  timeout: "2h"
+  retry_policy: "OnFailure"
+
+resources:
+  gpu: 
+    type: "nvidia-tesla-v100"
+    count: 1
+  storage:
+    type: "persistent"
+    size: "10Gi"

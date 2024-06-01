@@ -1,0 +1,14 @@
+environment: production
+database:
+  uri: "mongodb://prod-db-host:27017/proddb"
+  user: produser
+  password: ${DB_PASSWORD}
+
+model:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+
+serving:
+  replicas: 3
+  enable_debug_logs: false

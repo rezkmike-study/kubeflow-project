@@ -1,0 +1,14 @@
+environment: development
+database:
+  uri: "mongodb://localhost:27017/devdb"
+  user: devuser
+  password: devpassword
+
+model:
+  epochs: 5
+  batch_size: 16
+  learning_rate: 0.01
+
+serving:
+  replicas: 1
+  enable_debug_logs: true
